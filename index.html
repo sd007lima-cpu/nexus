@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NEXUS // Terminal de Operações</title>
+  <title>NEXUS dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
   <style>
     :root {
@@ -73,7 +73,7 @@
       color: var(--green);
       text-shadow: 0 0 20px var(--green);
     }
-    .logo span { color: var(--cyan); }
+    .logo span { color: var(--green); }
     .status-bar { display: flex; gap: 24px; font-size: 0.7rem; }
     .status-item { display: flex; align-items: center; gap: 6px; }
     .dot {
@@ -147,6 +147,10 @@
     }
     .target-item:hover { background: #00ff410a; padding-left: 6px; }
     .target-ip { color: var(--cyan); }
+    .target-meta {
+      font-size: 0.6rem;
+      color: var(--green-dim);
+    }
     .target-status {
       font-size: 0.6rem;
       padding: 2px 6px;
@@ -221,6 +225,7 @@
       margin-bottom: 10px;
       font-size: 0.72rem;
     }
+    .stat-main { flex: 1; }
     .stat-label { color: var(--green-dim); }
     .stat-value { color: var(--green); font-family: 'Orbitron', sans-serif; font-size: 0.7rem; }
     .bar-track {
@@ -239,6 +244,10 @@
     }
     .bar-fill.red { background: var(--red); box-shadow: 0 0 6px var(--red); }
     .bar-fill.yellow { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+    #cpu-bar { width: 72%; }
+    #ram-bar { width: 45%; }
+    #net-bar { width: 88%; }
+    #disk-bar { width: 94%; }
 
     /* ALERTS */
     .alert-item {
@@ -291,6 +300,9 @@
       border-radius: 50%;
       box-shadow: 0 0 8px var(--green);
     }
+    .ping-node-a { top: 40%; left: 30%; }
+    .ping-node-b { top: 55%; left: 65%; animation-delay: 0.8s; }
+    .ping-node-c { top: 30%; left: 50%; }
     .ping-ring {
       position: absolute;
       border: 1px solid var(--green);
@@ -298,6 +310,21 @@
       animation: pingExpand 2s infinite;
       opacity: 0;
     }
+    .ping-ring-a { top: 40%; left: 30%; }
+    .worldmap-label { z-index: 1; opacity: 0.4; }
+    .latency-list {
+      font-size: 0.68rem;
+      color: var(--green-dim);
+      line-height: 2;
+    }
+    .latency-row {
+      display: flex;
+      justify-content: space-between;
+    }
+    .latency-val-cyan { color: var(--cyan); }
+    .latency-val-yellow { color: var(--yellow); }
+    .latency-val-red { color: var(--red); }
+    .latency-val-green { color: var(--green); }
     @keyframes pingExpand {
       0% { width: 6px; height: 6px; opacity: 0.8; }
       100% { width: 40px; height: 40px; opacity: 0; margin: -17px; }
@@ -324,23 +351,23 @@
     <div class="panel">
       <div class="panel-title">Alvos Identificados</div>
       <div class="target-item">
-        <div><div style="font-size:0.6rem;color:var(--green-dim)">TARGET-01</div><div class="target-ip">192.168.1.105</div></div>
+        <div><div class="target-meta">TARGET-01</div><div class="target-ip">192.168.1.105</div></div>
         <span class="target-status status-active">ATIVO</span>
       </div>
       <div class="target-item">
-        <div><div style="font-size:0.6rem;color:var(--green-dim)">TARGET-02</div><div class="target-ip">10.0.0.254</div></div>
+        <div><div class="target-meta">TARGET-02</div><div class="target-ip">10.0.0.254</div></div>
         <span class="target-status status-scanning">SCAN</span>
       </div>
       <div class="target-item">
-        <div><div style="font-size:0.6rem;color:var(--green-dim)">TARGET-03</div><div class="target-ip">172.16.0.1</div></div>
+        <div><div class="target-meta">TARGET-03</div><div class="target-ip">172.16.0.1</div></div>
         <span class="target-status status-pwned">PWNED</span>
       </div>
       <div class="target-item">
-        <div><div style="font-size:0.6rem;color:var(--green-dim)">TARGET-04</div><div class="target-ip">192.168.0.1</div></div>
+        <div><div class="target-meta">TARGET-04</div><div class="target-ip">192.168.0.1</div></div>
         <span class="target-status status-active">ATIVO</span>
       </div>
       <div class="target-item">
-        <div><div style="font-size:0.6rem;color:var(--green-dim)">TARGET-05</div><div class="target-ip">203.0.113.42</div></div>
+        <div><div class="target-meta">TARGET-05</div><div class="target-ip">203.0.113.42</div></div>
         <span class="target-status status-scanning">SCAN</span>
       </div>
     </div>
@@ -348,19 +375,19 @@
     <div class="panel">
       <div class="panel-title">Recursos do Sistema</div>
       <div class="stat-row">
-        <div><div class="stat-label">CPU</div><div class="bar-track"><div class="bar-fill yellow" id="cpu-bar" style="width:72%"></div></div></div>
+        <div class="stat-main"><div class="stat-label">CPU</div><div class="bar-track"><div class="bar-fill yellow" id="cpu-bar"></div></div></div>
         <div class="stat-value" id="cpu-val">72%</div>
       </div>
       <div class="stat-row">
-        <div style="flex:1"><div class="stat-label">RAM</div><div class="bar-track"><div class="bar-fill" id="ram-bar" style="width:45%"></div></div></div>
+        <div class="stat-main"><div class="stat-label">RAM</div><div class="bar-track"><div class="bar-fill" id="ram-bar"></div></div></div>
         <div class="stat-value" id="ram-val">45%</div>
       </div>
       <div class="stat-row">
-        <div style="flex:1"><div class="stat-label">REDE ↑</div><div class="bar-track"><div class="bar-fill" id="net-bar" style="width:88%"></div></div></div>
+        <div class="stat-main"><div class="stat-label">REDE ↑</div><div class="bar-track"><div class="bar-fill" id="net-bar"></div></div></div>
         <div class="stat-value" id="net-val">88%</div>
       </div>
       <div class="stat-row">
-        <div style="flex:1"><div class="stat-label">DISCO</div><div class="bar-track"><div class="bar-fill red" style="width:94%"></div></div></div>
+        <div class="stat-main"><div class="stat-label">DISCO</div><div class="bar-track"><div class="bar-fill red" id="disk-bar"></div></div></div>
         <div class="stat-value">94%</div>
       </div>
     </div>
@@ -402,17 +429,17 @@
     <div class="panel">
       <div class="panel-title">Mapa de Conexões</div>
       <div class="worldmap">
-        <div class="ping-dot" style="top:40%;left:30%"></div>
-        <div class="ping-ring" style="top:calc(40% - 0px);left:calc(30% - 0px)"></div>
-        <div class="ping-dot" style="top:55%;left:65%;animation-delay:0.8s"></div>
-        <div class="ping-dot" style="top:30%;left:50%"></div>
-        <span style="z-index:1;opacity:0.4">MAPA DE REDE GLOBAL</span>
+        <div class="ping-dot ping-node-a"></div>
+        <div class="ping-ring ping-ring-a"></div>
+        <div class="ping-dot ping-node-b"></div>
+        <div class="ping-dot ping-node-c"></div>
+        <span class="worldmap-label">MAPA DE REDE GLOBAL</span>
       </div>
-      <div style="font-size:0.68rem;color:var(--green-dim);line-height:2">
-        <div style="display:flex;justify-content:space-between"><span>BR → US</span><span style="color:var(--cyan)">12ms</span></div>
-        <div style="display:flex;justify-content:space-between"><span>BR → EU</span><span style="color:var(--yellow)">89ms</span></div>
-        <div style="display:flex;justify-content:space-between"><span>BR → AS</span><span style="color:var(--red)">210ms</span></div>
-        <div style="display:flex;justify-content:space-between"><span>PACOTES/s</span><span style="color:var(--green)">4.821</span></div>
+      <div class="latency-list">
+        <div class="latency-row"><span>BR → US</span><span class="latency-val-cyan">12ms</span></div>
+        <div class="latency-row"><span>BR → EU</span><span class="latency-val-yellow">89ms</span></div>
+        <div class="latency-row"><span>BR → AS</span><span class="latency-val-red">210ms</span></div>
+        <div class="latency-row"><span>PACOTES/s</span><span class="latency-val-green">4.821</span></div>
       </div>
     </div>
 
